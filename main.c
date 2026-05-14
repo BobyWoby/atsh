@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
 
     char buf[buf_sz];
 
-    char* cmd = (char*)malloc(strlen(BIN_DIR));
+    char* cmd = (char*)malloc(strlen(BIN_DIR) + 1);
     strcpy(cmd, BIN_DIR);
 
     int arg_capacity = 1;
@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
             int argc = 0;
             while (token != NULL) {
                 if (argc >= arg_capacity) {
-                    args = (char**)reallocarray(args, arg_capacity *= 2, sizeof(char*));
+                    args = (char**)reallocarray(args, arg_capacity = arg_capacity * 2 + 1, sizeof(char*));
                 }
                 args[argc++] = token;
                 token = strtok(NULL, "\n ");
@@ -70,8 +70,10 @@ int main(int argc, char** argv) {
             if (execv(args[0], args) == -1) {
                 // search in /bin/
                 if (errno == 2) {
-                    cmd = (char*)realloc(cmd, strlen(cmd) + strlen(args[0] + 1));
+                    cmd = (char*)realloc(cmd, strlen(cmd) + strlen(args[0]) + 1);
+                    printf("cmd: %s\n", cmd);
                     strcat(cmd, args[0]);
+                    printf("cmd: %s\n", cmd);
                     if (execv(cmd, args) == -1) {
                         perror("Exec Error: ");
 
