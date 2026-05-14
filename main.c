@@ -7,10 +7,13 @@
 
 
 int main(int argc, char **argv){
-    const char *DEFAULT_DIR = "/bin/";
-    const int buf_sz = 100000;
+    static const char *DEFAULT_DIR = "/bin/";
+    static const int buf_sz = 100000;
 
-    char *prompt = "atsh> ";
+    static const char *prompt = "atsh> ";
+    static const char* exit_msg = "Goodbye!\n";
+
+
     char buf[buf_sz];
     chdir(DEFAULT_DIR);
 
@@ -19,31 +22,41 @@ int main(int argc, char **argv){
         write(0, prompt, strlen(prompt));
         int bytes_read = read(0, buf, buf_sz);
 
-        int pid = fork();
-        if(pid < 0){
-            char *err_msg = "Failed to fork process\n";
-            write(0, err_msg, strlen(err_msg));
-        }else if(pid == 0){
-            // Child Process
-            // char *cmd;
-            char *args[1000] = {NULL};
-            char *cmd = (char *)malloc(strlen(buf));
+        char *cmd = (char *)malloc(strlen(buf));
+        char *token = strtok(buf, "\n ");
+        
+        int arg_capacity = 1;
+        char **args = (char **)malloc(arg_capacity * sizeof(char *));
 
-            char *token = strtok(buf, "\n ");
+        if(!strcmp(token, "exit")){
+            write(0, exit_msg, strlen(exit_msg));
+            
+            // Cleanup memory
+            free(args);
+            free(cmd);
+
+            exit(0);
+        }else {
             int argc = 0;
             while(token != NULL){
-                // printf("%s\n", token);
-                // memset(args[argc], '\0', strlen(args[argc]));
+                if(argc >= arg_capacity){
+                    args = (char **)reallocarray(args, arg_capacity *= 2, sizeof(char *));
+                }
                 args[argc++] = token;
                 token = strtok(NULL, "\n ");
             }
             args[argc] = NULL;
 
-            int idx = 0;
-            while(args[idx] != NULL){
-                printf("%s\n", args[idx++]);
-            }
+            if(!strcmp(args[0], "cd")){
 
+            }
+        }
+
+        int pid = fork();
+        if(pid < 0){
+            char *err_msg = "Failed to fork process\n";
+            write(0, err_msg, strlen(err_msg));
+        }else if(pid == 0){
             if(execv(args[0], args) == -1){
                 perror("Exec Error: ");
             }
@@ -53,5 +66,8 @@ int main(int argc, char **argv){
             buf[0] = '\0';
             // Parent
         }
+
+        free(args);
+        free(cmd);
     }
 }
