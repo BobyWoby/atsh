@@ -15,9 +15,9 @@ int main(int argc, char **argv){
     chdir(DEFAULT_DIR);
 
     while(true){
+        memset(buf, '\0', sizeof(buf));
         write(0, prompt, strlen(prompt));
         int bytes_read = read(0, buf, buf_sz);
-        // write(0, buf, bytes_read);
 
         int pid = fork();
         if(pid < 0){
@@ -26,8 +26,7 @@ int main(int argc, char **argv){
         }else if(pid == 0){
             // Child Process
             // char *cmd;
-            char *args[100000] = {NULL};
-            memset(args, '\0', sizeof(args));
+            char *args[1000] = {NULL};
             char *cmd = (char *)malloc(strlen(buf));
 
             char *token = strtok(buf, "\n ");
